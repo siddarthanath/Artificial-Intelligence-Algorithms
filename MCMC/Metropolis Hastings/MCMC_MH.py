@@ -29,6 +29,8 @@ class Cipher:
         Args:
             reference_text:
                 String to reference the decrypted text cipher against for likelihood scoring.
+                In this case, we are using War and Peace text. As a result, if a different 
+                text is being used, then this function will have to be modified.
             symbol_text:
                 The string name of the file containing symbols that were used for encryption.
         Returns:
