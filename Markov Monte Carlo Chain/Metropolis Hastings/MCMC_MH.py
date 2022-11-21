@@ -205,7 +205,7 @@ class MCMC(Cipher):
 
     def __init__(self, symbol_text: str, reference_text: str, encrypted_text: str, start_key: Optional[str]):
         """
-        Initialise MCMC algorithm.
+        Initialise Markov Monte Carlo Chain algorithm.
         Args:
             symbol_text:
                 String containing symbols that were used in encryption.
@@ -295,7 +295,7 @@ class MCMC(Cipher):
 
     def run_alg(self, num_iter: int, random_cipher: bool) -> Dict[str, List]:
         """
-        Run MCMC (via Metropolis Hastings) algorithm.
+        Run Markov Monte Carlo Chain (via Metropolis Hastings) algorithm.
         Args:
             num_iter:
                 The number of iterations to run the Markov chain.
@@ -304,7 +304,7 @@ class MCMC(Cipher):
         Returns:
             Decoded text and final cipher map.
         """
-        print("MCMC algorithm warmup...")
+        print("Markov Monte Carlo Chain algorithm warmup...")
         # Obtain single and pair transition probabilities from reference text as well as counts
         reference_single_text = self.get_single_counts_probas(text=self.reference_text)
         reference_counts = reference_single_text[0]
@@ -330,7 +330,7 @@ class MCMC(Cipher):
                                              decrypted_single_start=decrypted_single_start)
         # Add starting cipher to best state
         best_state.update({old_cipher_score: cipher_map})
-        print("MCMC commencing: \n")
+        print("Markov Monte Carlo Chain commencing: \n")
         for i in range(num_iter):
             # Generate new cipher
             new_cipher_map = self.generate_new_cipher(cipher_map=cipher_map)
@@ -446,9 +446,9 @@ def main():
     # Instantiate Metropolis Hastings Algorithm
     decryption_model = MCMC(symbol_text=symbol_text, reference_text=reference_text, encrypted_text=encrypted_text,
                             start_key=symbol_text)
-    print("MCMC algorithm initialised!")
+    print("Markov Monte Carlo Chain algorithm initialised!")
     # Run Metropolis Hastings algorithm
-    print("Enter number of iterations to run MCMC Algorithm:")
+    print("Enter number of iterations to run Markov Monte Carlo Chain Algorithm:")
     num_iter = int(input())
     print("Enter True for a specialised cipher, else enter False:")
     random_cipher = eval(input())

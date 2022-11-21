@@ -15,7 +15,7 @@ class ImageEM:
 
     def __init__(self, X: np.array, pi_weights: np.array, pixel_comp: np.array):
         """
-        Initialise EM algorithm.
+        Initialise Expectation Maximisation algorithm.
         Args:
             X:
                 An array containing image data (N by D).
@@ -54,7 +54,7 @@ class ImageEM:
 
     def e_step(self) -> np.array:
         """
-        Compute responsibilities for the E-step of EM.
+        Compute responsibilities for the E-step of Expectation Maximisation.
         Args:
             N/A
         Returns:
@@ -71,7 +71,7 @@ class ImageEM:
 
     def m_step(self, r_n_k: np.array):
         """
-        Compute maximising parameters for E{log(P(x,s|π,p_)} with respect to p(s = k|π, p) = q(s) for the M-step of EM.
+        Compute maximising parameters for E{log(P(x,s|π,p_)} with respect to p(s = k|π, p) = q(s) for the M-step of Expectation Maximisation.
         Args:
             r_n_k:
                 An array of responsibility values.
@@ -111,11 +111,11 @@ class ImageEM:
 
     def run_alg(self, num_iter: int, epsilon: float):
         """
-        Run EM algorithm.
+        Run Expectation Maximisation algorithm.
         Args:
             num_iter:
-                An integer allowed up to the number of iterations for EM model to run.
-                Note: The EM model might stop before this value if it converges.
+                An integer allowed up to the number of iterations for Expectation Maximisation model to run.
+                Note: The Expectation Maximisation model might stop before this value if it converges.
             epsilon:
                 Convergence bound for expected log likelihood.
         Returns:
@@ -130,7 +130,7 @@ class ImageEM:
             # Check convergence
             ll_new = self.expected_ll(r_n_k=self.e_step())
             if np.abs(ll_new - self.ll_values[i]) < epsilon:
-                print(f"EM model has converged after {i} iterations.")
+                print(f"Expectation Maximisation model has converged after {i} iterations.")
                 self.r_n_k = self.e_step()
                 self.iter_stop = i
                 break
@@ -197,12 +197,12 @@ def main():
     # Load data
     X = np.loadtxt(data)
     # Create list of K multivariate Bernoulli's
-    print("Enter a list of mixtures numbers for EM algorithm (e.g. in format 2, 3, 5):")
+    print("Enter a list of mixtures numbers for Expectation Maximisation algorithm (e.g. in format 2, 3, 5):")
     K_list = list(map(int, input().split(',')))
-    print("Enter maximum number of iterations for EM algorithm:")
+    print("Enter maximum number of iterations for Expectation Maximisation algorithm:")
     num_iter = int(input())
     # Create random initial inputs
-    print("Enter number of times to repeat EM algorithm:")
+    print("Enter number of times to repeat Expectation Maximisation algorithm:")
     n_repeats = int(input())
     # Initialise model to None
     em_model = None
@@ -214,7 +214,7 @@ def main():
             start_pixel_comp = np.random.uniform(low=0, high=1, size=(K, X.shape[1]))
             # Instantiate model
             em_model = ImageEM(X=X, pi_weights=start_weights, pixel_comp=start_pixel_comp)
-            # Run EM algorithm
+            # Run Expectation Maximisation algorithm
             em_model.run_alg(num_iter=num_iter, epsilon=1e-15)
             # Visualise pixels
             for k in range(K):
@@ -237,7 +237,7 @@ def main():
             plt.ylabel("Joint Log Likelihood")
             plt.plot(np.arange(0, em_model.iter_stop+1, 1), em_model.ll_values, "-og", label="Joint Log Likelihood")
             plt.show()
-            print(f"Final EM Results for K={K}")
+            print(f"Final Expectation Maximisation Results for K={K}")
             print(f"2) Likelihood values: {em_model.ll_values}")
             print(f"3) Mixture/Weights: {em_model.pi_weights}")
         # Plot the learned probability vector and mean as images
