@@ -1,5 +1,5 @@
 """
-This file runs Q3.
+This file runs Expectation Maximisation Algorithm for binary digit classification.
 Note: The binary digits text file and this code file should be in the same folder level.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -7,12 +7,12 @@ Note: The binary digits text file and this code file should be in the same folde
 # Third Party
 import numpy as np
 import matplotlib.pyplot as plt
+
 # Private
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
 class ImageEM:
-
     def __init__(self, X: np.array, pi_weights: np.array, pixel_comp: np.array):
         """
         Initialise Expectation Maximisation algorithm.
@@ -49,7 +49,10 @@ class ImageEM:
             # Once a cluster is chosen, loop over each Bernoulli parameter p_k
             for k in range(self.pixel_comp.shape[0]):
                 # This calculates probability over D independent pixels
-                proba_X[n, k] = np.prod((self.pixel_comp[k]) ** self.X[n] * (1 - self.pixel_comp[k]) ** (1 - self.X[n]))
+                proba_X[n, k] = np.prod(
+                    (self.pixel_comp[k]) ** self.X[n]
+                    * (1 - self.pixel_comp[k]) ** (1 - self.X[n])
+                )
         return proba_X
 
     def e_step(self) -> np.array:
@@ -102,8 +105,11 @@ class ImageEM:
                 first_term = r_n_k[n, k]
                 second_term = np.log(self.pi_weights[k])
                 third_term = np.log(
-                    np.prod((self.pixel_comp[k]) ** self.X[n] * (1 - self.pixel_comp[k]) ** (1 - self.X[n])).clip(
-                        min=1e-25))
+                    np.prod(
+                        (self.pixel_comp[k]) ** self.X[n]
+                        * (1 - self.pixel_comp[k]) ** (1 - self.X[n])
+                    ).clip(min=1e-25)
+                )
                 k_sum += first_term * (second_term + third_term)
             # Add to log joint
             e_ll += k_sum
@@ -130,7 +136,9 @@ class ImageEM:
             # Check convergence
             ll_new = self.expected_ll(r_n_k=self.e_step())
             if np.abs(ll_new - self.ll_values[i]) < epsilon:
-                print(f"Expectation Maximisation model has converged after {i} iterations.")
+                print(
+                    f"Expectation Maximisation model has converged after {i} iterations."
+                )
                 self.r_n_k = self.e_step()
                 self.iter_stop = i
                 break
@@ -151,10 +159,8 @@ class ImageEM:
         """
         # Create plot
         plt.figure()
-        plt.imshow(np.reshape(X, (8, 8)),
-                   interpolation="None",
-                   cmap='gray')
-        plt.axis('off')
+        plt.imshow(np.reshape(X, (8, 8)), interpolation="None", cmap="gray")
+        plt.axis("off")
         plt.title(f"Pixel distribution from mixture component {k}")
         # Show plot
         plt.show()
@@ -179,12 +185,12 @@ class ImageEM:
         plt.figure(figsize=(5, 5))
         for n in range(X.shape[0]):
             plt.subplot(10, num_cols, n + 1)
-            plt.imshow(np.reshape(X[n, :], (8, 8)),
-                       interpolation="None",
-                       cmap='gray')
-            plt.axis('off')
+            plt.imshow(np.reshape(X[n, :], (8, 8)), interpolation="None", cmap="gray")
+            plt.axis("off")
         if title is True:
-            plt.suptitle(f"Image 1: Matrix P of cluster {k+1} \n Image 2: Matrix M (Mean of all detected images)")
+            plt.suptitle(
+                f"Image 1: Matrix P of cluster {k+1} \n Image 2: Matrix M (Mean of all detected images)"
+            )
         else:
             plt.suptitle(f"Matrix P for each cluster")
         plt.show()
@@ -197,8 +203,10 @@ def main():
     # Load data
     X = np.loadtxt(data)
     # Create list of K multivariate Bernoulli's
-    print("Enter a list of mixtures numbers for Expectation Maximisation algorithm (e.g. in format 2, 3, 5):")
-    K_list = list(map(int, input().split(',')))
+    print(
+        "Enter a list of mixtures numbers for Expectation Maximisation algorithm (e.g. in format 2, 3, 5):"
+    )
+    K_list = list(map(int, input().split(",")))
     print("Enter maximum number of iterations for Expectation Maximisation algorithm:")
     num_iter = int(input())
     # Create random initial inputs
@@ -213,7 +221,9 @@ def main():
             start_weights = np.random.dirichlet(np.ones(K))
             start_pixel_comp = np.random.uniform(low=0, high=1, size=(K, X.shape[1]))
             # Instantiate model
-            em_model = ImageEM(X=X, pi_weights=start_weights, pixel_comp=start_pixel_comp)
+            em_model = ImageEM(
+                X=X, pi_weights=start_weights, pixel_comp=start_pixel_comp
+            )
             # Run Expectation Maximisation algorithm
             em_model.run_alg(num_iter=num_iter, epsilon=1e-15)
             # Visualise pixels
@@ -221,11 +231,17 @@ def main():
                 mean_image = None
                 # Images best created from cluster k
                 try:
-                    image_k = np.where(np.array([np.argmax(image) for image in em_model.r_n_k]) == k)[0]
+                    image_k = np.where(
+                        np.array([np.argmax(image) for image in em_model.r_n_k]) == k
+                    )[0]
                     # Plot the pixel matrix P and the image sample mean M alongside with their detected images
                     mean_image = X[image_k].mean(axis=0)
-                    main_data = np.vstack((em_model.pixel_comp[k], mean_image, X[image_k]))
-                    em_model.plot_multiple_img(X=main_data, k=k, num_cols=10, title=True)
+                    main_data = np.vstack(
+                        (em_model.pixel_comp[k], mean_image, X[image_k])
+                    )
+                    em_model.plot_multiple_img(
+                        X=main_data, k=k, num_cols=10, title=True
+                    )
                 except TypeError as t:
                     print(f"No images found in cluster {k}.")
                 # Store vector
@@ -235,14 +251,23 @@ def main():
             plt.title(f"Joint Log Likelihood Vs Iteration Number for K={K} (clusters) ")
             plt.xlabel("Iteration Number")
             plt.ylabel("Joint Log Likelihood")
-            plt.plot(np.arange(0, em_model.iter_stop+1, 1), em_model.ll_values, "-og", label="Joint Log Likelihood")
+            plt.plot(
+                np.arange(0, em_model.iter_stop + 1, 1),
+                em_model.ll_values,
+                "-og",
+                label="Joint Log Likelihood",
+            )
             plt.show()
             print(f"Final Expectation Maximisation Results for K={K}")
             print(f"2) Likelihood values: {em_model.ll_values}")
             print(f"3) Mixture/Weights: {em_model.pi_weights}")
         # Plot the learned probability vector and mean as images
-        em_model.plot_multiple_img(X=np.array(K_proba_values), k=K, num_cols=K, title=False)
-        em_model.plot_multiple_img(X=np.array(K_mean_values), k=K, num_cols=K, title=False)
+        em_model.plot_multiple_img(
+            X=np.array(K_proba_values), k=K, num_cols=K, title=False
+        )
+        em_model.plot_multiple_img(
+            X=np.array(K_mean_values), k=K, num_cols=K, title=False
+        )
 
 
 # Execute code via terminal
