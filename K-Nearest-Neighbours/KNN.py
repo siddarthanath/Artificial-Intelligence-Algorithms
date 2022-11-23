@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mc
 import pandas as pd
 import numpy as np
-from scipy.spatial import KDTree
+from sklearn.neighbors import KDTree
 from sklearn.model_selection import train_test_split
 import sklearn.metrics as sm
 
@@ -60,7 +60,7 @@ class KNN:
         # Calculate closest neighbour indices
         tree = KDTree(self.X)
         # Obtain indices of closest k neighbours
-        indices = tree.query(X_other, k=self.k)
+        indices = tree.query(X_other, k=self.k, return_distance=False)
         # Obtain labels of k nearest neighbours
         for i in range(len(indices)):
             nn_values = self.y[indices[i]]
@@ -68,20 +68,14 @@ class KNN:
             if self.ml_task == "classification":
                 # Count occurrences of each label
                 label_counts = Counter(nn_values)
-                # Calculate which has the largest number of label counts - if there is a tie, pick a random label
-                label_keys, label_values = list(label_counts.keys()), list(
-                    label_counts.values()
-                )
-                list_pred_labels = [
-                    label_keys[i]
-                    for i in range(len(label_keys) - 1)
-                    if label_values[i] == label_values[i + 1]
-                ]
-                # If one label has most occurrences, pick this as predicted label, else randomly pick between highest
-                if len(list_pred_labels) == 1:
-                    y_pred[i] = list_pred_labels[1]
+                # Find maximum number of label occurrences
+                max_counts = max(label_counts.values())
+                pred_labels = [k for k, v in label_counts.items() if v == max_counts]
+                # If one label has most occurrences, pick this as prediction, else randomly pick between highest
+                if len(pred_labels) == 1:
+                    y_pred[i] = pred_labels[0]
                 else:
-                    y_pred[i] = np.random.choice(list_pred_labels)
+                    y_pred[i] = np.random.choice(pred_labels)
             elif self.ml_task == "regression":
                 y_pred[i] = np.mean(nn_values)
             else:
@@ -170,13 +164,15 @@ def main():
     # Ask if user wants to shuffle the dataset
     print("Enter True or False (if you want to shuffle the dataset):")
     bool_shuffle = eval(input())
-    # Shuffle dataset and create train-test split
-    if bool_shuffle is True:
-        main_df = main_df.sample(frac=1).reset_index(drop=True)
-    # Create X and y dataset
-    X, y = main_df.iloc[:, :-1], main_df.iloc[:, -1]
-    X_train, y_train, X_test, y_test = train_test_split(
-        X, y, test_size=0.33, random_state=42
+    # Put data into feature matrix and target
+    X, y = main_df.iloc[:, :-1], main_df.iloc[:, -1].to_numpy()
+    # Scale feature matrix to prevent distance problems
+    X = (X - np.mean(X, axis=0)) / (np.std(X, axis=0))
+    # Change df to array
+    X = X.to_numpy()
+    # Create train-test split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.33, random_state=42, shuffle=bool_shuffle
     )
     # Create KNN model
     knn_model = KNN(X=X_train, y=y_train, k=num_neighbours, ml_task=ml_task)
@@ -185,8 +181,8 @@ def main():
     # Calculate scores
     main_df_scores = knn_model.scores(y_values=y_test, y_values_pred=y_values_pred)
     # Print score
-    for key, value in main_df_scores:
-        print(f"The {key} score for this dataset is: {value}. \n")
+    for count, key, value in enumerate(main_df_scores.items()):
+        print(f"{count+1}) The {key} score for this dataset is: {value}. \n")
 
 
 # Execute code via terminal
