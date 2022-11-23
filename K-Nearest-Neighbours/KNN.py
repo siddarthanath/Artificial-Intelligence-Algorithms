@@ -181,8 +181,8 @@ def main():
     # Calculate scores
     main_df_scores = knn_model.scores(y_values=y_test, y_values_pred=y_values_pred)
     # Print score
-    for count, key, value in enumerate(main_df_scores.items()):
-        print(f"{count+1}) The {key} score for this dataset is: {value}. \n")
+    for count, (key, value) in enumerate(main_df_scores.items()):
+        print(f"{count+1}) The {key} score for this dataset is: {value}.")
 
 
 # Execute code via terminal
