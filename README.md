@@ -1,5 +1,7 @@
 # Machine-Learning-And-Artificial-Intelligence-Algorithms
-A suite containing Machine Learning and Artificial Intelligence algorithms used for Supervised, Unsupervised and Reinforcement Learning tasks. If you would like to run the code stand alone i.e. be able to do further analysis with the algorithms, you will have to alter the _main_ function by either: 
+A suite containing Machine Learning and Artificial Intelligence algorithms for Supervised, Unsupervised and Reinforcement Learning tasks. 
+
+If you would like to run the code stand alone i.e. be able to do further analysis with the algorithms, you will have to alter the _main_ function by either: 
 
 1) Removing it entirely and create another method inside the class (which mimics the functionality of the _main_ function - this is for users who wish to execute the file via a notebook).
 2) Alter the _main_ to return what you need (this for those who wish to execute the code via terminal). 
