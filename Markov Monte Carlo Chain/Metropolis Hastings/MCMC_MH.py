@@ -1,5 +1,5 @@
 """
-This file runs Q5.
+This file runs Markov Monte Carlo Chain (MCMC) via Metropolis Hastings for text decryption.
 Note: The symbols and messages text file and this code file should be in the same folder level.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -7,6 +7,7 @@ Note: The symbols and messages text file and this code file should be in the sam
 from typing import Dict, Tuple, Optional, List
 import collections
 import re
+
 # Third Party
 from scipy.special import expit
 import seaborn as sns
@@ -21,7 +22,6 @@ import matplotlib.pyplot as plt
 
 # -------------------------------------------------------------------------------------------------------------------- #
 class Cipher:
-
     @staticmethod
     def clean_text(reference_text: str, symbol_text: str):
         """
@@ -29,7 +29,7 @@ class Cipher:
         Args:
             reference_text:
                 String to reference the decrypted text cipher against for likelihood scoring.
-                In this case, we are using War and Peace text. As a result, if a different 
+                In this case, we are using War and Peace text. As a result, if a different
                 text is being used, then this function will have to be modified.
             symbol_text:
                 The string name of the file containing symbols that were used for encryption.
@@ -46,40 +46,40 @@ class Cipher:
             if char not in symbol_list:
                 unknown_symbols.append(char)
         # Remove symbols that are not in the symbol file
-        reference_text = re.sub(r'[\n#$%@]', '', reference_text)
+        reference_text = re.sub(r"[\n#$%@]", "", reference_text)
         # Change to lower case vowels
-        reference_text = re.sub(r'À', "a", reference_text)
-        reference_text = re.sub(r'Á', "a", reference_text)
-        reference_text = re.sub(r'É', "e", reference_text)
-        reference_text = re.sub(r'à', "a", reference_text)
-        reference_text = re.sub(r'á', "a", reference_text)
-        reference_text = re.sub(r'ä', "a", reference_text)
-        reference_text = re.sub(r'â', "a", reference_text)
-        reference_text = re.sub(r'è', "e", reference_text)
-        reference_text = re.sub(r'é', "e", reference_text)
-        reference_text = re.sub(r'ê', "e", reference_text)
-        reference_text = re.sub(r'ë', "e", reference_text)
-        reference_text = re.sub(r'í', "i", reference_text)
-        reference_text = re.sub(r'î', "i", reference_text)
-        reference_text = re.sub(r'ï', "i", reference_text)
-        reference_text = re.sub(r'ó', "o", reference_text)
-        reference_text = re.sub(r'ô', "o", reference_text)
-        reference_text = re.sub(r'ö', "o", reference_text)
-        reference_text = re.sub(r'ú', "u", reference_text)
-        reference_text = re.sub(r'ü', "u", reference_text)
+        reference_text = re.sub(r"À", "a", reference_text)
+        reference_text = re.sub(r"Á", "a", reference_text)
+        reference_text = re.sub(r"É", "e", reference_text)
+        reference_text = re.sub(r"à", "a", reference_text)
+        reference_text = re.sub(r"á", "a", reference_text)
+        reference_text = re.sub(r"ä", "a", reference_text)
+        reference_text = re.sub(r"â", "a", reference_text)
+        reference_text = re.sub(r"è", "e", reference_text)
+        reference_text = re.sub(r"é", "e", reference_text)
+        reference_text = re.sub(r"ê", "e", reference_text)
+        reference_text = re.sub(r"ë", "e", reference_text)
+        reference_text = re.sub(r"í", "i", reference_text)
+        reference_text = re.sub(r"î", "i", reference_text)
+        reference_text = re.sub(r"ï", "i", reference_text)
+        reference_text = re.sub(r"ó", "o", reference_text)
+        reference_text = re.sub(r"ô", "o", reference_text)
+        reference_text = re.sub(r"ö", "o", reference_text)
+        reference_text = re.sub(r"ú", "u", reference_text)
+        reference_text = re.sub(r"ü", "u", reference_text)
         # Fix digraphs
-        reference_text = re.sub(r'æ', "ae", reference_text)
-        reference_text = re.sub(r'œ', "oe", reference_text)
+        reference_text = re.sub(r"æ", "ae", reference_text)
+        reference_text = re.sub(r"œ", "oe", reference_text)
         # Change to lower case consonants
-        reference_text = re.sub(r'ç', "c", reference_text)
-        reference_text = re.sub(r'ý', "y", reference_text)
+        reference_text = re.sub(r"ç", "c", reference_text)
+        reference_text = re.sub(r"ý", "y", reference_text)
         # Change others to match symbols in symbol file
-        reference_text = re.sub(r'—', "-", reference_text)
-        reference_text = re.sub(r'‘', symbol_list[10], reference_text)
-        reference_text = re.sub(r'’', symbol_list[10], reference_text)
-        reference_text = re.sub(r'“', symbol_list[11], reference_text)
-        reference_text = re.sub(r'”', symbol_list[11], reference_text)
-        reference_text = re.sub(r'\ufeff', symbol_list[1], reference_text)
+        reference_text = re.sub(r"—", "-", reference_text)
+        reference_text = re.sub(r"‘", symbol_list[10], reference_text)
+        reference_text = re.sub(r"’", symbol_list[10], reference_text)
+        reference_text = re.sub(r"“", symbol_list[11], reference_text)
+        reference_text = re.sub(r"”", symbol_list[11], reference_text)
+        reference_text = re.sub(r"\ufeff", symbol_list[1], reference_text)
         # Finally make text all lower case
         reference_text = reference_text.lower()
         # Check one more time to see if any unknown symbols in reference text do not appear in symbol file
@@ -89,12 +89,19 @@ class Cipher:
             if char not in symbol_list:
                 unknown_symbols_final.append(char)
         if len(unknown_symbols_final) != 0:
-            print("There are still some symbols that have not been converted! Do not include these in transition"
-                  "matrix.")
+            print(
+                "There are still some symbols that have not been converted! Do not include these in transition"
+                "matrix."
+            )
         return reference_text
 
     @staticmethod
-    def cipher_map(symbol_text: str, symbol_counts: Dict, reference_counts: Dict, random_cipher: bool) -> Dict:
+    def cipher_map(
+        symbol_text: str,
+        symbol_counts: Dict,
+        reference_counts: Dict,
+        random_cipher: bool,
+    ) -> Dict:
         """
         Given a file of symbols, return a dictionary in the form {A:R, B:W, C:O, ...}.
         Args:
@@ -111,7 +118,7 @@ class Cipher:
         """
         # Create random cipher
         if random_cipher is False:
-            new_cipher = ''.join(random.sample(symbol_text, len(symbol_text)))
+            new_cipher = "".join(random.sample(symbol_text, len(symbol_text)))
             # Create map
             mapping = {}
             for i in range(len(new_cipher)):
@@ -121,11 +128,22 @@ class Cipher:
         else:
             mapping = {}
             all_symbols = list(symbol_text)
-            symbol_counts_ordered = {k: v for k, v in sorted(symbol_counts.items(), key=lambda item: item[1],
-                                                             reverse=True)}
-            reference_counts_ordered = {k: v for k, v in sorted(reference_counts.items(), key=lambda item: item[1],
-                                                                reverse=True)}
-            for key_1, key_2 in zip(list(symbol_counts_ordered.keys()), list(reference_counts_ordered.keys())):
+            symbol_counts_ordered = {
+                k: v
+                for k, v in sorted(
+                    symbol_counts.items(), key=lambda item: item[1], reverse=True
+                )
+            }
+            reference_counts_ordered = {
+                k: v
+                for k, v in sorted(
+                    reference_counts.items(), key=lambda item: item[1], reverse=True
+                )
+            }
+            for key_1, key_2 in zip(
+                list(symbol_counts_ordered.keys()),
+                list(reference_counts_ordered.keys()),
+            ):
                 mapping[key_1] = key_2
                 all_symbols.pop(all_symbols.index(key_1))
             # Find remaining keys that have not been mapped and map them randomly
@@ -147,7 +165,7 @@ class Cipher:
             String of text.
         """
         # Apply cipher on text
-        new_text = ''
+        new_text = ""
         for i in range(len(text)):
             new_text += cipher_map[text[i]]
         return new_text
@@ -178,9 +196,11 @@ class Cipher:
         return cipher_map_new
 
     @staticmethod
-    def cipher_score(decrypted_text: str,
-                     reference_text_transition_matrix: pd.DataFrame,
-                     decrypted_single_start: float) -> float:
+    def cipher_score(
+        decrypted_text: str,
+        reference_text_transition_matrix: pd.DataFrame,
+        decrypted_single_start: float,
+    ) -> float:
         """
         Given a cipher, calculate its score function.
         Args:
@@ -202,8 +222,13 @@ class Cipher:
 
 
 class MCMC(Cipher):
-
-    def __init__(self, symbol_text: str, reference_text: str, encrypted_text: str, start_key: Optional[str]):
+    def __init__(
+        self,
+        symbol_text: str,
+        reference_text: str,
+        encrypted_text: str,
+        start_key: Optional[str],
+    ):
         """
         Initialise Markov Monte Carlo Chain algorithm.
         Args:
@@ -235,8 +260,11 @@ class MCMC(Cipher):
         # Creating dictionary
         text_counts = dict(collections.Counter(text))
         # Creating probabilities
-        text_probas_normalised = {k: v / total for total in (sum(text_counts.values()),
-                                                             ) for k, v in text_counts.items()}
+        text_probas_normalised = {
+            k: v / total
+            for total in (sum(text_counts.values()),)
+            for k, v in text_counts.items()
+        }
         return text_counts, text_probas_normalised
 
     def get_pair_counts_and_probas(self) -> Tuple[Dict, pd.DataFrame]:
@@ -254,19 +282,26 @@ class MCMC(Cipher):
         final_counts = {}
         pair_counts = {}
         # Loop through each symbol over every other symbol
-        transition_matrix = pd.DataFrame(data={}, index=sorted(self.symbol_text), columns=sorted(self.symbol_text))
+        transition_matrix = pd.DataFrame(
+            data={}, index=sorted(self.symbol_text), columns=sorted(self.symbol_text)
+        )
         for i in symbol_list:
             for j in symbol_list:
                 # Store number of counts (Note: To fix empty transition, add 1 - this does not affect chain)
                 pair_counts[f"{i}{j}"] = self.reference_text.count(f"{i}{j}")
             # Normalise transition probabilities
-            transition_matrix[i] = [v / total for total in (sum(pair_counts.values()),) for _,
-                                                                                            v in pair_counts.items()]
+            transition_matrix[i] = [
+                v / total
+                for total in (sum(pair_counts.values()),)
+                for _, v in pair_counts.items()
+            ]
             final_counts.update(pair_counts)
             # Reinitialise pair counts
             pair_counts = {}
         # If any transitions are 0, add the minimum value of the transition matrix to every value and normalise again
-        min_value = np.amin(transition_matrix[transition_matrix != 0].fillna(1).to_numpy())
+        min_value = np.amin(
+            transition_matrix[transition_matrix != 0].fillna(1).to_numpy()
+        )
         transition_matrix += min_value
         return final_counts, transition_matrix
 
@@ -315,19 +350,24 @@ class MCMC(Cipher):
         # Store ciphers, likelihood score and decrypted texts
         best_state = {}
         # Create starting cipher decryption map i.e. the identity map
-        cipher_map = self.cipher_map(symbol_text=self.symbol_text,
-                                     symbol_counts=symbol_counts,
-                                     reference_counts=reference_counts,
-                                     random_cipher=random_cipher,
-                                     )
+        cipher_map = self.cipher_map(
+            symbol_text=self.symbol_text,
+            symbol_counts=symbol_counts,
+            reference_counts=reference_counts,
+            random_cipher=random_cipher,
+        )
         # Using this cipher, decrypt the encrypted text
-        decrypted_text = self.apply_cipher(text=self.encrypted_text, cipher_map=cipher_map)
+        decrypted_text = self.apply_cipher(
+            text=self.encrypted_text, cipher_map=cipher_map
+        )
         # Calculate first prior probability
         decrypted_single_start = reference_single_text_probas[decrypted_text[0]]
         # Calculate score of decrypted text
-        old_cipher_score = self.cipher_score(decrypted_text=decrypted_text[1:],
-                                             reference_text_transition_matrix=reference_text_transition_matrix,
-                                             decrypted_single_start=decrypted_single_start)
+        old_cipher_score = self.cipher_score(
+            decrypted_text=decrypted_text[1:],
+            reference_text_transition_matrix=reference_text_transition_matrix,
+            decrypted_single_start=decrypted_single_start,
+        )
         # Add starting cipher to best state
         best_state.update({old_cipher_score: cipher_map})
         print("Markov Monte Carlo Chain commencing: \n")
@@ -337,21 +377,34 @@ class MCMC(Cipher):
             while new_cipher_map in list(best_state.values()):
                 new_cipher_map = self.generate_new_cipher(cipher_map=cipher_map)
             # Decrypt the encrypted text with this new cipher
-            new_decrypted_text = self.apply_cipher(text=self.encrypted_text, cipher_map=new_cipher_map)
+            new_decrypted_text = self.apply_cipher(
+                text=self.encrypted_text, cipher_map=new_cipher_map
+            )
             # Print decrypted text every 100 iterations
             if i % 100 == 0:
-                print(f"Likelihood: {old_cipher_score} | First 60 strings from decrypted text at iteration {i}: "
-                      f"{new_decrypted_text[:60]}.")
+                print(
+                    f"Likelihood: {old_cipher_score} | First 60 strings from decrypted text at iteration {i}: "
+                    f"{new_decrypted_text[:60]}."
+                )
             # Calculate pair counts in new decrypted text
             decrypted_single_start = reference_single_text_probas[decrypted_text[0]]
             # Calculate score of new cipher
-            new_cipher_score = self.cipher_score(decrypted_text=new_decrypted_text[1:],
-                                                 reference_text_transition_matrix=reference_text_transition_matrix,
-                                                 decrypted_single_start=decrypted_single_start)
+            new_cipher_score = self.cipher_score(
+                decrypted_text=new_decrypted_text[1:],
+                reference_text_transition_matrix=reference_text_transition_matrix,
+                decrypted_single_start=decrypted_single_start,
+            )
             # Execute acceptance proposal
-            if self.acceptance_criteria(old_cipher_score=old_cipher_score, new_cipher_score=new_cipher_score) is True:
+            if (
+                self.acceptance_criteria(
+                    old_cipher_score=old_cipher_score, new_cipher_score=new_cipher_score
+                )
+                is True
+            ):
                 # Store new cipher and likelihood score
-                best_state.update({new_cipher_score: [new_cipher_map, new_decrypted_text]})
+                best_state.update(
+                    {new_cipher_score: [new_cipher_map, new_decrypted_text]}
+                )
                 # Update old cipher map with new cipher map
                 cipher_map = new_cipher_map
                 # Update old cipher score with new cipher score
@@ -393,7 +446,7 @@ class MCMC(Cipher):
             # Calculate next iteration
             p_new = p_uniform @ transition_matrix
             # Find norm
-            if np.linalg.norm(p_new-p_uniform) < 1e-5:
+            if np.linalg.norm(p_new - p_uniform) < 1e-5:
                 break
             else:
                 p_uniform = p_new
@@ -411,8 +464,14 @@ class MCMC(Cipher):
         """
         plt.figure(figsize=(20, 20))
         sns.set(font_scale=2)
-        sns.heatmap(transition_matrix, vmin=0, vmax=1, xticklabels=list(transition_matrix.index),
-                    yticklabels=list(transition_matrix.index), cmap="rocket_r")
+        sns.heatmap(
+            transition_matrix,
+            vmin=0,
+            vmax=1,
+            xticklabels=list(transition_matrix.index),
+            yticklabels=list(transition_matrix.index),
+            cmap="rocket_r",
+        )
         plt.show()
 
     @staticmethod
@@ -429,30 +488,44 @@ class MCMC(Cipher):
         sns.set(font_scale=2)
         values = list(stationary_distribution.values())
         key = list(stationary_distribution.keys())
-        sns.heatmap(np.array(values).reshape(-1, 1), vmin=0, vmax=1, yticklabels=key, xticklabels=["_"],
-                    cmap="rocket_r")
+        sns.heatmap(
+            np.array(values).reshape(-1, 1),
+            vmin=0,
+            vmax=1,
+            yticklabels=key,
+            xticklabels=["_"],
+            cmap="rocket_r",
+        )
         plt.show()
 
 
 # Create main function to run via terminal
 def main():
     # Obtain text files
-    symbol_text = open("symbols.txt").read().replace('\n', '')
+    symbol_text = open("symbols.txt").read().replace("\n", "")
     encrypted_text = open("message.txt").read()
-    with open('war_and_peace.txt') as f:
+    with open("war_and_peace.txt") as f:
         reference_text = f.read()
     # Clean reference text of characters
-    reference_text = Cipher.clean_text(reference_text=reference_text, symbol_text=symbol_text)
+    reference_text = Cipher.clean_text(
+        reference_text=reference_text, symbol_text=symbol_text
+    )
     # Instantiate Metropolis Hastings Algorithm
-    decryption_model = MCMC(symbol_text=symbol_text, reference_text=reference_text, encrypted_text=encrypted_text,
-                            start_key=symbol_text)
+    decryption_model = MCMC(
+        symbol_text=symbol_text,
+        reference_text=reference_text,
+        encrypted_text=encrypted_text,
+        start_key=symbol_text,
+    )
     print("Markov Monte Carlo Chain algorithm initialised!")
     # Run Metropolis Hastings algorithm
     print("Enter number of iterations to run Markov Monte Carlo Chain Algorithm:")
     num_iter = int(input())
     print("Enter True for a specialised cipher, else enter False:")
     random_cipher = eval(input())
-    cipher_list = decryption_model.run_alg(num_iter=num_iter, random_cipher=random_cipher)
+    cipher_list = decryption_model.run_alg(
+        num_iter=num_iter, random_cipher=random_cipher
+    )
     print("Final Results:\n")
     print(f"Best Score: {list(cipher_list.keys())[0]}")
     print(f"Best Map: {list(cipher_list.values())[0][0]}")
