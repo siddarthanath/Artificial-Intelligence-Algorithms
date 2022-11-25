@@ -4,7 +4,7 @@ Note: The diabetes csv file and this code file should be in the same folder leve
 """
 # -------------------------------------------------------------------------------------------------------------------- #
 # Standard Library
-from typing import Union, Dict
+from typing import Union, Dict, List
 from collections import Counter
 
 # Third Party
@@ -15,6 +15,7 @@ import numpy as np
 from sklearn.neighbors import KDTree
 from sklearn.model_selection import train_test_split
 import sklearn.metrics as sm
+
 
 # Private
 
@@ -29,6 +30,7 @@ class KNN:
             X:
                 Typically the train data.
                 Note that KNN does not have parameters and so there is no concept of "fitting".
+                However, we can think about calculate the nearest neighbours as this "fitting" process.
             y:
                 The labels of the train data.
             k:
@@ -45,22 +47,33 @@ class KNN:
             ml_task if ml_task == "classification" or ml_task == "regression" else None
         )
 
-    def predict(self, X_other: np.array) -> np.array:
+    def fit(self, X_test: np.array) -> List[List[int]]:
         """
-        Predict labels or values for both classification and regression.
+        Find indices of nearest neighbours.
         Note that we use KDTree for fast neighbour implementation - one can also do this from scratch.
         Args:
-            X_other:
+            X_test:
                 Typically the test data to find distances against each train data.
+        Returns:
+            A list of indices of nearest neighbours for each test datapoint against all train datapoints.
+        """
+        # Calculate closest neighbour indices
+        tree = KDTree(self.X)
+        # Obtain indices of closest k neighbours
+        indices = tree.query(X_test, k=self.k, return_distance=False)
+        return indices
+
+    def predict(self, indices: List[List[int]]) -> np.array:
+        """
+        Predict labels or values for both classification and regression.
+        Args:
+            indices:
+                A list of indices of nearest neighbours for each test datapoint against all train datapoints.
         Returns:
             An array of label predictions.
         """
         # Store predictions
-        y_pred = np.zeros(X_other.shape[0])
-        # Calculate closest neighbour indices
-        tree = KDTree(self.X)
-        # Obtain indices of closest k neighbours
-        indices = tree.query(X_other, k=self.k, return_distance=False)
+        y_pred = np.zeros(len(indices))
         # Obtain labels of k nearest neighbours
         for i in range(len(indices)):
             nn_values = self.y[indices[i]]
@@ -83,8 +96,8 @@ class KNN:
         return y_pred
 
     def scores(
-        self, y_values: np.array, y_values_pred: np.array
-    ) -> Union[float, Dict[str, Union[float, int]]]:
+            self, y_values: np.array, y_values_pred: np.array
+    ) -> Dict[str, Union[float, int]]:
         """
         Calculate generalisation scores.
         Args:
@@ -93,7 +106,7 @@ class KNN:
             y_values_pred:
                 The predicted discrete labels or continuous quantity (of the test data usually).
         Returns:
-            A float value.
+            A dictionary of float values.
         """
         if self.ml_task == "classification":
             f_1_score = sm.f1_score(y_true=y_values, y_pred=y_values_pred)
@@ -116,7 +129,7 @@ class KNN:
         else:
             raise ValueError("Correct ml_task has not been provided.")
 
-    def plot_decision_regions(self):
+    def plot_decision_boundary(self):
         """
         Plot decision boundary of KNN.
         Args:
@@ -138,7 +151,7 @@ class KNN:
         x_min, x_max = self.X[:, 0].min() - 1, self.X[:, 0].max() + 1
         y_min, y_max = self.X[:, 1].min() - 1, self.X[:, 1].max() + 1
         xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
-        Z = self.predict(X_other=np.c_[xx.ravel(), yy.ravel()])
+        Z = self.predict(indices=self.fit(X_test=np.c_[xx.ravel(), yy.ravel()]))
         # Put the result into a color plot
         Z = Z.reshape(xx.shape)
         plt.figure()
@@ -176,13 +189,15 @@ def main():
     )
     # Create KNN model
     knn_model = KNN(X=X_train, y=y_train, k=num_neighbours, ml_task=ml_task)
+    # Fit KNN model
+    indices = knn_model.fit(X_test=X_test)
     # Predict neighbours for test set
-    y_values_pred = knn_model.predict(X_other=X_test)
+    y_values_pred = knn_model.predict(indices=indices)
     # Calculate scores
     main_df_scores = knn_model.scores(y_values=y_test, y_values_pred=y_values_pred)
     # Print score
     for count, (key, value) in enumerate(main_df_scores.items()):
-        print(f"{count+1}) The {key} score for this dataset is: {value}.")
+        print(f"{count + 1}) The {key} score for this dataset is: {value}.")
 
 
 # Execute code via terminal
