@@ -1,5 +1,5 @@
 # Machine-Learning-And-Artificial-Intelligence-Algorithms
-A suite containing Machine Learning and Artificial Intelligence algorithms for Supervised, Unsupervised and Reinforcement Learning tasks. 
+A suite containing Machine Learning and Artificial Intelligence algorithms for Supervised, Unsupervised, Deep and Reinforcement Learning tasks. 
 
 If you would like to run the code stand alone i.e. be able to do further analysis with the algorithms, you will have to alter the _main_ function by either: 
 
