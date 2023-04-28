@@ -1,5 +1,5 @@
 """
-This file runs Epsilon Greedy.
+This file creates an Epsilon Greedy Agent.
 Note: The helper functions and this code file should be in the same folder level.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -15,24 +15,24 @@ import numpy as np
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
-class EpsilonGreedy(object):
+class EpsilonGreedy:
+
     """
     Initialise epsilon-greedy agent.
-    This agent returns an action between 0 and 'number_of_arms'; with probability
-    `(1-epsilon)` it chooses the action with the highest estimated value, while
-    with probability `epsilon` it samples an action uniformly at random.
+    - This agent returns an action between 0 and 'number_of_arms'.
+    - It does so with probability `(1-epsilon)` it chooses the action with the highest estimated value, while
+    with probability `epsilon`, it samples an action uniformly at random.
     """
-
-    def __init__(self, name, number_of_arms, epsilon=0.1):
+    def __init__(self, name: str, number_of_arms: int, epsilon=Union[0.1, callable]):
         self.name = name
         self._number_of_arms = number_of_arms
         self._epsilon = epsilon
         self.reset()
 
-    def step(self, previous_action, reward):
-        """
-        Execute Epsilon-Greedy agent's next action and update Epsilon Greedy's action-state values.
-        """
+    """
+    Execute Epsilon-Greedy agent's next action and update Epsilon Greedy's action-state values.
+    """
+    def step(self, previous_action: Optional[int], reward: float) -> int:
         # Execute Epsilon-Greedy
         if previous_action != None:
             # Update action count for previous action

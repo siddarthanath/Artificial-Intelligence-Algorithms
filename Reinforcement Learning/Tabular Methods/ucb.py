@@ -1,5 +1,5 @@
 """
-This file runs UCB.
+This file creates an UCB Agent.
 Note: The helper functions and this code file should be in the same folder level.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -14,17 +14,22 @@ import numpy as np
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
-
 class UCB:
     
-    """Initialise UCB agent."""
+    """
+    Initialise UCB agent. 
+    - This agent returns an action between 0 and 'number_of_arms'.
+    - This agent uses uncertainty in the action-value estimates for balancing exploration and exploitation.
+    """
     def __init__(self, name: str, number_of_arms: int, bonus_multiplier: float):
         self._number_of_arms = number_of_arms
         self._bonus_multiplier = bonus_multiplier
         self.name = name
         self.reset()
 
-    """Execute UCB agent's next action and update UCB's action-state values."""
+    """
+    Execute UCB agent's next action and update UCB's action-state values.
+    """
     def step(self, previous_action: Optional[int], reward: Union[float, int]) -> int:
         # Execute UCB
         if previous_action != None:
@@ -45,7 +50,9 @@ class UCB:
         self.t += 1
         return action
 
-    """Reset UCB agent."""
+    """
+    Reset UCB agent.
+    """
     def reset(self):
         # Q_t(a) is the estimated value of action ‘a’ at time step ‘t’
         self.Q_t = np.zeros(self._number_of_arms)
