@@ -1,4 +1,4 @@
-# Artificial-Intelligence-And-Machine-Learning-Algorithms
+# Artificial-Intelligence-Algorithms
 A repository containing Artificial Intelligence algorithms for Supervised, Unsupervised, Deep and Reinforcement Learning tasks. 
 A blend of Numpy, PyTorch and JAX library usage from Python to provide state-of-the-art implementations.
 
