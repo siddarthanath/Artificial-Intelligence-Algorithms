@@ -23,7 +23,7 @@ class CNN(nn.Module):
     def __init__(self):
         # Allows for multiple inheritance
         super(CNN, self).__init__()
-        # Create network
+        # Create network (NOTE: There are different CNN sizes that can be constructed using different padding, kernels, strides and pooling.)
         self.net1 = nn.Sequential(
             nn.Conv2d(
                 in_channels=1, out_channels=16, kernel_size=5, stride=1, padding=2
