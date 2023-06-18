@@ -1,5 +1,6 @@
 """
-This file creates a Feed=-Forward Neural Network.
+This file creates a Feed=-Forward Neural Network (FFNN).
+This FFNN has been trained and tested on MNIST datasets.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
 # Standard Library
