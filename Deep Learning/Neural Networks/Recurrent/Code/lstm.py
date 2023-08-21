@@ -15,15 +15,15 @@ import torch.nn as nn
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
-# Recurrent Neural Network
+# Long Short-Term Memory
 
 
-class RNN(nn.Module):
-    """This initialises the RNN."""
+class LSTM(nn.Module):
+    """This initialises the LSTM."""
 
-    class RNNModel(nn.Module):
+    class LSTMModel(nn.Module):
         def __init__(self, input_dim, hidden_dim, layer_dim, output_dim):
-            super(RNNModel, self).__init__()
+            super(LSTMModel, self).__init__()
             # Hidden dimensions
             self.hidden_dim = hidden_dim
             # Layer dimensions
@@ -44,7 +44,7 @@ class RNN(nn.Module):
         out = self.fc(out[:, -1, :]) 
         return out
 
-    """This fits the RNN to the training set and evaluates the RNN on the validation set."""
+    """This fits the LSTM to the training set and evaluates the RNN on the validation set."""
 
     def fit(
         self,
@@ -81,7 +81,7 @@ class RNN(nn.Module):
             with torch.no_grad():
                 # Initialise validation loss
                 val_loss = 0
-                # Iterate through entire collection (per batch)for inputs, labels in test_loader:
+                # Iterate through entire collection (per batch) for inputs, labels in test_loader:
                 for seq, targets in val_loader:
                     # Forward pass
                     outputs = self(seq)
@@ -107,7 +107,7 @@ class RNN(nn.Module):
                         early_stop = True
                         break
 
-    """This predicts on the test dataset using the optimal CNN obtained from fit."""
+    """This predicts on the test dataset using the optimal LSTM obtained from fit."""
 
     def predict(self, test_loader: torch.utils.data.dataloader.DataLoader):
         # Load saved model (NOTE: Due to the fit, we can assume that a model is always saved i.e. has improved through training.)
