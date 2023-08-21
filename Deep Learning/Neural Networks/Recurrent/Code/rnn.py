@@ -83,7 +83,7 @@ class RNN(nn.Module):
             with torch.no_grad():
                 # Initialise validation loss
                 val_loss = 0
-                # Iterate through entire collection (per batch)for inputs, labels in test_loader:
+                # Iterate through entire collection (per batch) for inputs, labels in test_loader:
                 for seq, targets in val_loader:
                     # Forward pass
                     outputs = self(seq)
@@ -109,7 +109,7 @@ class RNN(nn.Module):
                         early_stop = True
                         break
 
-    """This predicts on the test dataset using the optimal CNN obtained from fit."""
+    """This predicts on the test dataset using the optimal RNN obtained from fit."""
 
     def predict(self, test_loader: torch.utils.data.dataloader.DataLoader):
         # Load saved model (NOTE: Due to the fit, we can assume that a model is always saved i.e. has improved through training.)
