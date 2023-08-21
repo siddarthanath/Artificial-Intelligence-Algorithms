@@ -1,6 +1,7 @@
 """
-This file creates a Convolutional Neural Network (CNN).
-This CNN has been trained and tested on MNIST datasets.
+This file creates a Feed-Forward Neural Network (FFNN).
+This FFNN has been trained and tested on MNIST datasets.
+This means that the for other datasets, the FFNN architecture and output prediction conversion may need alterting.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
 # Standard Library
@@ -14,42 +15,30 @@ import torch.nn as nn
 
 # -------------------------------------------------------------------------------------------------------------------- #
 
-# Convolutional Neural Network
+# Feed-Forward Neural Network
 
 
-class CNN(nn.Module):
-    """This initialises the CNN."""
+class FFNN(nn.Module):
+    """This initialises the FFNN."""
 
-    def __init__(self):
+    def __init__(self, input_dim: int, hidden_dim: int, output_dim: int):
         # Allows for multiple inheritance
-        super(CNN, self).__init__()
-        # Create network (NOTE: There are different CNN sizes that can be constructed using different padding, kernels, strides and pooling.)
-        self.net1 = nn.Sequential(
-            nn.Conv2d(
-                in_channels=1, out_channels=16, kernel_size=5, stride=1, padding=2
-            ),
+        super(FFNN, self).__init__()
+        # Create network (NOTE: This is currently a 1 Layer FFNN - we can add more Linear() layers to create a deeper network.)
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2),
-            nn.Conv2d(
-                in_channels=16, out_channels=32, kernel_size=5, stride=1, padding=2
-            ),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2),
+            nn.Linear(hidden_dim, output_dim),
         )
-        self.net2 = nn.Linear(32 * 7 * 7, 10)
 
     """This applies a forward pass to the input data."""
 
     def forward(self, x: torch.Tensor):
         # Create network
-        out = self.net1(x)
-        # Original size: (128, 32, 7, 7) --> New out size: (128, 32*7*7)
-        out = out.view(out.size(0), -1)
-        # Linear Function (applied to convolution layer output) i.e. pre-activation first hidden layer.
-        out = self.net2(out)
+        out = self.net(x)
         return out
 
-    """This fits the CNN to the training set and evaluates the FFNN on the validation set."""
+    """This fits the FFNN to the training set and evaluates the FFNN on the validation set."""
 
     def fit(
         self,
@@ -66,11 +55,11 @@ class CNN(nn.Module):
         # Iterate through number of epochs
         for epoch in range(num_epochs):
             # Iterate through entire collection (per batch)
-            for images, labels in train_loader:
+            for seq, labels in train_loader:
                 # Clear gradients with respect to parameters
                 opt.zero_grad()
                 # Forward pass
-                outputs = self(images)
+                outputs = self(seq.view(seq.shape[0], -1))
                 # Calculate loss
                 loss = loss_fn(outputs, labels)
                 # Backward pass
@@ -84,9 +73,9 @@ class CNN(nn.Module):
                 # Initialise secondary metric
                 correct = 0
                 # Iterate through entire collection (per batch)
-                for images, labels in val_loader:
+                for seq, labels in val_loader:
                     # Forward pass
-                    outputs = self(images)
+                    outputs = self(seq.view(seq.shape[0], -1))
                     # Obtain predictons
                     _, preds = torch.max(outputs.data, dim=1)
                     # Total correct predictions
@@ -112,7 +101,7 @@ class CNN(nn.Module):
                     if epochs_no_improve == patience:
                         break
 
-    """This predicts on the test dataset using the optimal CNN obtained from fit."""
+    """This predicts on the test dataset using the optimal FFNN obtained from fit."""
 
     def predict(self, test_loader: torch.utils.data.dataloader.DataLoader):
         # Load saved model (NOTE: Due to the fit, we can assume that a model is always saved i.e. has improved through training.)
@@ -122,9 +111,9 @@ class CNN(nn.Module):
             print(f"Error: {e} - no model has been saved!")
         # Store predictions for each batch
         all_preds = torch.Tensor()
-        for images, _ in test_loader:
+        for seq, _ in test_loader:
             # Forward pass
-            outputs = self(images)
+            outputs = self(seq.view(seq.shape[0], -1))
             # Obtain predictons
             _, preds = torch.max(outputs.data, dim=1)
             # Store predictions
