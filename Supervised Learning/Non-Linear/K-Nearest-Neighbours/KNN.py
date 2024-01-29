@@ -1,6 +1,6 @@
 """
 This file runs K-Nearest-Neighbours.
-Note: The diabetes csv file and this code file should be in the same folder level.
+Note: The data file and this code file should be in the same folder level.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
 # Standard Library
