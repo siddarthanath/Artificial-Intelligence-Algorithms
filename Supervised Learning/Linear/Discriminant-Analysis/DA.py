@@ -1,5 +1,5 @@
 """
-This file runs Gaussian Discriminant Analysis.
+This file runs Discriminant Analysis.
 Note: The data file and this code file should be in the same folder level.
 """
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -20,7 +20,7 @@ import sklearn.metrics as sm
 class GDA:
     def __init__(self, pi_weights, mu_weights, cov_weights, optim_type):
         """
-        Initialise GDA classification model.
+        Initialise DA classification model. This model specifically uses a Gaussian likelihood.
         """
         self.pi = pi_weights
         self.mu = mu_weights
